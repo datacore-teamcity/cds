@@ -74,9 +74,11 @@ spec:
       serviceAccountName: cds-operator
       containers:
       - name: cds-operator
-        image: datacoresoftware/cds:cds-operator-0.1
+        image: datacoresoftware/cds-operator-0.1:v1alpha
         command: ["/cdsoperator"]
-        args: ["-buildType", release]
+        args: 
+        - --buildType=release 
+        - --buildTag=0.10.0.1049
       imagePullSecrets:
       - name: cds-docker-credentials
 

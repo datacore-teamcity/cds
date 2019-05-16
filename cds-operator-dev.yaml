@@ -74,9 +74,11 @@ spec:
       serviceAccountName: cds-operator
       containers:
       - name: cds-operator
-        image: localhost:30500/cds-operator-0.1
+        image: localhost:30500/cds-operator-0.1:development
         command: ["/cdsoperator"]
-        args: ["-buildType", development]
+        args: 
+        - --buildType=development 
+        - --buildTag=development
       imagePullSecrets:
       - name: cds-docker-credentials
 
