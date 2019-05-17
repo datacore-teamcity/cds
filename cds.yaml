@@ -1,0 +1,34 @@
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSResource
+metadata:
+  name: cdsconfig
+  namespace: datacore
+---
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSClass
+metadata:
+  name: shlib-skeleton
+  namespace: datacore
+spec:
+  name: shlib-skeleton
+  services:
+    ApplicationContainer:
+      next: nullservice
+    nullservice:
+      connected-to: CephVolume
+    CephVolume:
+---
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSClass
+metadata:
+  name: iscsi-skeleton
+  namespace: datacore
+spec:
+  name: iscsi-skeleton
+  services:
+    iScsiAppContainer:
+      next: nullservice
+    nullservice:
+      connected-to: CephVolume
+    CephVolume:
+
