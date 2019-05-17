@@ -1,0 +1,11 @@
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSVolume
+metadata:
+  name: mysql-vol
+spec:
+  classname: iscsi-skeleton
+  volumeid: mysql-pv
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
