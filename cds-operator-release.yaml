@@ -78,7 +78,7 @@ spec:
         command: ["/cdsoperator"]
         args: 
         - --buildType=release 
-        - --buildTag=0.10.0.1049
+        - --buildTag=v1alpha
       imagePullSecrets:
       - name: cds-docker-credentials
 
