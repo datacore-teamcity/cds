@@ -1,0 +1,46 @@
+{
+  "apiVersion": "vlabs",
+  "properties": {
+    "orchestratorProfile": {
+      "orchestratorType": "Kubernetes",
+      "orchestratorVersion": "1.15.5",
+      "kubernetesConfig": {
+        "apiServerConfig" : {
+          "--feature-gates": "VolumeSnapshotDataSource=true"
+        },
+        "controllerManagerConfig" : {
+          "--feature-gates": "VolumeSnapshotDataSource=true"
+        }
+      }
+    },
+    "masterProfile": {
+      "count": 3,
+      "dnsPrefix": "",
+      "vmSize": "Standard_D4s_v3"
+    },
+    "agentPoolProfiles": [
+      {
+        "name": "agentpool1",
+        "count": 3,
+        "vmSize": "Standard_D8s_v3",
+        "storageProfile" : "ManagedDisks",
+        "diskSizesGB": [128, 128],
+        "availabilityProfile": "VirtualMachineScaleSets"
+      }
+    ],
+    "linuxProfile": {
+      "adminUsername": "azureuser",
+      "ssh": {
+        "publicKeys": [
+          {
+            "keyData": ""
+          }
+        ]
+      }
+    },
+    "servicePrincipalProfile": {
+      "clientId": "",
+      "secret": ""
+    }
+  }
+}
