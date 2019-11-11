@@ -1,0 +1,79 @@
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSResource
+metadata:
+  name: cdsconfig
+  namespace: datacore
+spec:
+  encryptionSpec:
+    enabled: "false"
+---
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSClass
+metadata:
+  name: iscsi-skeleton
+  namespace: datacore
+spec:
+  name: iscsi-skeleton
+  services:
+    iScsiAppContainer:
+      next: Backend
+    Backend:
+---
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSClass
+metadata:
+  name: iscsi-direct
+  namespace: datacore
+spec:
+  name: iscsi-direct
+  services:
+    iScsiAppContainer:
+      next: Backend
+    Backend:
+---
+apiVersion: cdscontroller.datacore.com/v1alpha1
+kind: CDSClass
+metadata:
+  name: cdp-skeleton
+  namespace: datacore
+spec:
+  name: cdp-skeleton
+  services:
+    iScsiAppContainer:
+      next: cdp-service
+    cdp-service:
+      next: Backend
+    Backend:
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: datacore-direct
+provisioner: csi-datacore
+parameters:
+  class: iscsi-skeleton
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: datacore-cdp
+provisioner: csi-datacore
+parameters:
+  class: cdp-skeleton
+  encryption: "false"
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: datacore-encrypted
+provisioner: csi-datacore
+parameters:
+  class: iscsi-direct
+  encryption: "true"
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+
