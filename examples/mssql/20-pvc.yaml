@@ -5,7 +5,7 @@ metadata:
 spec:
   accessModes:
   - ReadWriteOnce
-  storageClassName: datacore-encrypted
   resources:
     requests:
       storage: 8Gi
+  storageClassName: datacore-cdp
