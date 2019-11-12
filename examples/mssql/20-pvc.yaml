@@ -2,11 +2,10 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: mssql-data
-  annotations:
-    storageClassName: datacore-encrypted
 spec:
   accessModes:
   - ReadWriteOnce
+  storageClassName: datacore-encrypted
   resources:
     requests:
       storage: 8Gi
