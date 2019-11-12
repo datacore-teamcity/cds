@@ -3,7 +3,7 @@ apiVersion: v1
 metadata:
   name: mssql-data
   annotations:
-    volume.beta.kubernetes.io/storage-class: datacore-encrypted
+    storageClassName: datacore-encrypted
 spec:
   accessModes:
   - ReadWriteOnce
