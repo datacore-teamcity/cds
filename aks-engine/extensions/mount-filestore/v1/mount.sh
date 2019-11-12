@@ -37,7 +37,7 @@
 MOUNTPOINT="/var/lib/datacore-rook-osd"
 MOUNT_OPTIONS="noatime,nodiratime,nodev,noexec,nosuid,nofail"
 
-# log() was missing, added a basic one
+
 log()
 {
     echo "$1"
@@ -63,7 +63,7 @@ has_filesystem() {
 scan_for_new_disks() {
     # Looks for unpartitioned disks
     declare -a RET
-	DEVS=($(ls -1 /dev/sd*|egrep -v "[0-9]$"))
+    DEVS=($(ls -1 /dev/sd*|egrep -v "[0-9]$"))
     for DEV in "${DEVS[@]}";
     do
         # The disk will be considered a candidate for partitioning
@@ -112,56 +112,63 @@ do_partition() {
 #
 # Use the bash-specific $PIPESTATUS to ensure we get the correct exit code
 # from fdisk and not from echo
-if [ ${PIPESTATUS[1]} -ne 0 ];
-then
-    echo "An error occurred partitioning ${_disk}" >&2
-    echo "I cannot continue" >&2
-    exit 2
-fi
+    if [ ${PIPESTATUS[1]} -ne 0 ];
+    then
+        echo "An error occurred partitioning ${_disk}" >&2
+        echo "I cannot continue" >&2
+        exit 2
+    fi
 }
 #end do_partition
 
 scan_partition_format()
 {
     log "Begin Rook-Ceph OSD FileStore mount extension"
-	log "Identifying available disks on vmss node"
+    log "Identifying available disks on vmss node"
 
     DISKS=($(scan_for_new_disks))
 
-	if [ "${#DISKS}" -eq 0 ];
-	then
-	    log "No unpartitioned disks without filesystems detected"
-	    return
-	fi
-	echo "Candidate disk inventory is ${DISKS[@]}"
-	for DISK in "${DISKS[@]}";
-	do
-	    echo "Reviewing disk ${DISK}"
-	    is_partitioned ${DISK}
-	    if [ ${?} -ne 0 ];
-	    then
-	        echo "${DISK} is not partitioned, partitioning"
-	        do_partition ${DISK}
-		else
-			echo "${DISK} is partitioned, skipping"
-			continue
-	    fi
-	    PARTITION=$(fdisk -l ${DISK}|grep -A 1 Device|tail -n 1|awk '{print $1}')
-	    has_filesystem ${PARTITION}
-	    if [ ${?} -ne 0 ];
-	    then
-	        echo "Creating ext4 filesystem on ${PARTITION}."
-	        mkfs -j -t ext4 ${PARTITION}
-	    fi
-	    echo "Desired mount point is ${MOUNTPOINT}"
-	    [ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
-	    read UUID FS_TYPE < <(blkid -u filesystem ${PARTITION}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
-	    add_to_fstab "${UUID}" "${MOUNTPOINT}"
-	    echo "Mounting disk ${PARTITION} on ${MOUNTPOINT}"
-	    mount "${MOUNTPOINT}"
-		echo "Ceph FileStore preparation is complete, exiting custom script extension."
-		break
-	done
+    if [ "${#DISKS}" -eq 0 ];
+    then
+        log "No unpartitioned disks without filesystems detected"
+        return
+    fi
+    
+    echo "Candidate disk inventory is ${DISKS[@]}"
+    
+    for DISK in "${DISKS[@]}";
+    do
+        echo "Reviewing disk ${DISK}"
+        
+        is_partitioned ${DISK}
+        if [ ${?} -ne 0 ];
+        then
+            echo "${DISK} is not partitioned, partitioning"
+            do_partition ${DISK}
+        else
+            echo "${DISK} is partitioned, skipping"
+            continue
+        fi
+        
+        PARTITION=$(fdisk -l ${DISK}|grep -A 1 Device|tail -n 1|awk '{print $1}')
+        has_filesystem ${PARTITION}
+        if [ ${?} -ne 0 ];
+        then
+            echo "Creating ext4 filesystem on ${PARTITION}."
+            mkfs -j -t ext4 ${PARTITION}
+        fi
+        
+        echo "Desired mount point is ${MOUNTPOINT}"
+        [ -d "${MOUNTPOINT}" ] || mkdir -p "${MOUNTPOINT}"
+        read UUID FS_TYPE < <(blkid -u filesystem ${PARTITION}|awk -F "[= ]" '{print $3" "$5}'|tr -d "\"")
+        
+        add_to_fstab "${UUID}" "${MOUNTPOINT}"
+        echo "Mounting disk ${PARTITION} on ${MOUNTPOINT}"
+        mount "${MOUNTPOINT}"
+        
+        echo "Ceph FileStore preparation is complete, exiting custom script extension."
+        break
+    done
 }
 
 
