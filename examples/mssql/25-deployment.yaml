@@ -39,9 +39,8 @@ spec:
   selector:
     app: mssql
   ports:
-    - name: mssql
-    - protocol: TCP
-      port: 1433
-    clusterIP: None
-    selector:
-      app: mssql
+  - name: mssql
+    port: 1433
+  clusterIP: None
+  selector:
+    app: mssql
