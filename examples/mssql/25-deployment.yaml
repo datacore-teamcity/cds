@@ -1,8 +1,33 @@
-apiVersion: apps/v1beta1
-kind: Deployment
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mssql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+  labels:
+    app: mssql
+spec:
+  selector:
+    app: mssql
+  ports:
+  - name: mssql
+    port: 1433
+  clusterIP: None
+  selector:
+    app: mssql
+---
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: mssql
 spec:
+  selector:
+    matchLabels:
+      app: mssql
+  serviceName: mssql
   replicas: 1
   template:
     metadata:
@@ -28,19 +53,3 @@ spec:
       - name: mssqldb
         persistentVolumeClaim:
           claimName: mssql-data
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mssql
-  labels:
-    app: mssql
-spec:
-  selector:
-    app: mssql
-  ports:
-  - name: mssql
-    port: 1433
-  clusterIP: None
-  selector:
-    app: mssql
