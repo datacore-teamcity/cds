@@ -8,3 +8,4 @@ metadata:
 data:
    ACCEPT_EULA: "Y"
    SA_PASSWORD: "MyC0m9l&xP@ssw0rd"
+   MSSQL_PID: "Developer"
