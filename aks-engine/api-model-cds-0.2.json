@@ -14,18 +14,22 @@
       }
     },
     "masterProfile": {
-      "count": 3,
+      "count": 1,
       "dnsPrefix": "",
-      "vmSize": "Standard_D4s_v3"
+      "vmSize": "Standard_B4ms"
     },
     "agentPoolProfiles": [
       {
         "name": "agentpool1",
         "count": 3,
-        "vmSize": "Standard_D8s_v3",
+        "vmSize": "Standard_B4ms",
         "storageProfile" : "ManagedDisks",
-        "diskSizesGB": [128, 128],
-        "availabilityProfile": "VirtualMachineScaleSets"
+        "diskSizesGB": [64],
+        "availabilityProfile": "VirtualMachineScaleSets",
+        "preProvisionExtension": {
+            "name": "mount-filestore",
+            "singleOrAll": "All"
+        }
       }
     ],
     "linuxProfile": {
@@ -41,6 +45,14 @@
     "servicePrincipalProfile": {
       "clientId": "",
       "secret": ""
-    }
+    },
+    "extensionProfiles": [
+      {
+        "name": "mount-filestore",
+        "version": "v1",
+        "rootURL": "https://raw.githubusercontent.com/datacore-teamcity/cds/master/aks-engine/",
+        "script": "mount.sh"
+      }
+    ]
   }
 }
