@@ -9,7 +9,7 @@
 - A Kubernetes cluster with at least 3 worker nodes
 - The Kubernetes feature gate 'VolumeSnapshot' should be enabled
 
-Worker nodes should have:
+Worker nodes should each have:
  - At least 12GB of RAM
  - At least 4vCPUs
  - One unpartitioned, unmounted disk device to use as CDS storage, which is a minimum of 64GiB in size
