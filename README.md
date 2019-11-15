@@ -69,8 +69,12 @@ kubectl apply -f https://raw.githubusercontent.com/datacore-teamcity/cds/master/
 ```
 
 Wait for the entire stack to be started.  This may take a few minutes.
+The installation is complete when all pods in the datacore namespace reach 'Running' or 'Completed' status
 
 
-### Verify Deployment
+### Create the CDP VolumeSnapshotClass
 
-*REDACTED*
+```
+kubectl apply -f https://raw.githubusercontent.com/datacore-teamcity/cds/master/datacore-snapshotClassCdp-0.2.yaml
+```
+
