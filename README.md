@@ -48,7 +48,7 @@ Where
 ### Deploy the CDS Operator
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/datacore-teamcity/cds/master/datacore-cds-operator-0.2.yaml
+kubectl apply -f https://raw.githubusercontent.com/datacore-teamcity/cds/master/datacore-operator-0.2.yaml
 ```
 
 Verify that the operator is installed and running
