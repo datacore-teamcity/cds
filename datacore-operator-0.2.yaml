@@ -6,6 +6,113 @@ metadata:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  name: cdsclasses.cdscontroller.datacore.com
+spec:
+  group: cdscontroller.datacore.com
+  names:
+    kind: CDSClass
+    listKind: CDSClassList
+    plural: cdsclasses
+    singular: cdsclass
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            services:
+              additionalProperties:
+                additionalProperties:
+                  type: string
+                type: object
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "operator-sdk generate k8s" to regenerate code after
+                modifying this file Add custom validation using kubebuilder tags:
+                https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
+              type: object
+          required:
+          - services
+          type: object
+        status:
+          type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: cdsvolumes.cdscontroller.datacore.com
+spec:
+  group: cdscontroller.datacore.com
+  names:
+    kind: CDSVolume
+    listKind: CDSVolumeList
+    plural: cdsvolumes
+    singular: cdsvolume
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            className:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "operator-sdk generate k8s" to regenerate code after
+                modifying this file Add custom validation using kubebuilder tags:
+                https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
+              type: string
+            volumeId:
+              type: string
+            volumeMode:
+              type: string
+          required:
+          - className
+          - volumeId
+          type: object
+        status:
+          type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
   name: cdsresources.cdscontroller.datacore.com
 spec:
   group: cdscontroller.datacore.com
@@ -143,13 +250,21 @@ rules:
   resources: ["deployments", "nodes", "pods"]
   verbs: ["create", "delete", "get", "list", "watch"]
 
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "delete", "get", "list", "update", "watch"]
+
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create", "delete", "get", "list", "update", "watch"]
+
 - apiGroups: [""]
   resources: ["namespaces", "serviceaccounts", "services"]
-  verbs: ["create", "delete", "get", "list"]
+  verbs: ["create", "delete", "get", "list", "watch"]
 
 - apiGroups: [""]
   resources: ["persistentvolumes"]
-  verbs: ["create", "delete", "list"]
+  verbs: ["create", "delete", "list", "watch"]
 
 - apiGroups: ["apiextensions.k8s.io"]
   resources: ["customresourcedefinitions"]
@@ -157,7 +272,7 @@ rules:
 
 # These do need to be at the cluster scope
 - apiGroups: ["cdscontroller.datacore.com"]
-  resources: ["cdsclasses", "cdsresources", "cdsvolumes"]
+  resources: ["cdsclasses", "cdsresources", "cdsvolumes", "cdsvolumes/status"]
   verbs: ["*"]
 
 - apiGroups: ["apps"]
@@ -454,11 +569,11 @@ spec:
       serviceAccountName: datacore-operator
       containers:
         - name: datacore-operator
-          image: datacoresoftware/cds-operator-0.1:datacore-operator-0.10.0.3925
+          image: datacoresoftware/cds-operator-0.1:datacore-operator-0.10.0.4581
           command:
           - datacore-operator
           args:
-            - --buildTag=0.10.0.3925
+            - --buildTag=0.10.0.4581
             - --repoLocation=datacoresoftware
           imagePullPolicy: Always
           env:
@@ -474,535 +589,5 @@ spec:
               value: "datacore-operator"
       imagePullSecrets:
         - name: cds-docker-credentials
-
----
-
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: datacore
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: datacore
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cds-operator
-  namespace: datacore
----
-
-######## batch ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-batch
-  namespace: datacore
-rules:
-- apiGroups: ["batch"]
-  resources: ["cronjobs", "jobs"]
-  verbs: ["*"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-batch
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-batch
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-######## Ceph ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-ceph
-  namespace: datacore
-rules:
-
-- apiGroups: ["ceph.rook.io"]
-  resources: ["*"]
-  verbs: ["*"]
-
-- apiGroups: [""]
-  resources: ["namespaces"]
-  verbs: ["create", "delete"]
-
-- apiGroups: [""]
-  resources:
-  - configmaps
-  - endpoints
-  - events
-  - persistentvolumes
-  - persistentvolumeclaims
-  - pods
-  - pods/log
-  - secrets
-  - services
-  - serviceaccounts
-  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
-
-- apiGroups: [""]
-  resources: ["nodes", "nodes/proxy"]
-  verbs: ["get", "list", "watch"]
-
-- apiGroups: ["apps"]
-  resources: ["daemonsets", "deployments", "statefulsets"]
-  verbs: ["create", "delete", "get", "list", "update", "watch"]
-
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["create", "delete", "get", "list", "update", "watch"]
-
-- apiGroups: ["extensions"]
-  resources: ["deployments"]
-  verbs: ["create", "delete"]
-
-- apiGroups: ["ceph.rook.io"]
-  resources: ["cephclusters", "cephfilesystems"]
-  verbs: ["create", "update", "delete"]
-
-- apiGroups: ["rook.io"]
-  resources: ["*"]
-  verbs: ["*"]
-
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
-  verbs: ["get", "list", "watch"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-ceph
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-ceph
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-######## Datacore CRD objects ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-datacore-crd
-  namespace: datacore
-rules:
-- apiGroups: ["cdscontroller.datacore.com"]
-  resources: ["configs", "cdsvolumes", "cdsclasses", "cdsresources"]
-  verbs: ["create", "delete", "get", "list", "update", "watch"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-datacore-crd
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-datacore-crd
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-######## CSI ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-csi
-  namespace: datacore
-rules:
-- apiGroups: ["csi.storage.k8s.io"]
-  resources: ["csinodeinfos"]
-  verbs: ["get", "list", "watch"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-csi
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-csi
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-######## NATS ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-nats
-  namespace: datacore
-rules:
-
-- apiGroups: ["nats.io"]
-  resources: ["natsclusters", "natsserviceroles"]
-  verbs: ["*"]
-
-- apiGroups: [""]
-  resources:
-  - configmaps
-  - endpoints
-  - events
-  - pods
-  - secrets
-  - serviceaccounts
-  - serviceaccounts/token
-  - services
-  verbs: ["*"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-nats
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-nats
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-######## observability ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-observability
-  namespace: datacore
-rules:
-- apiGroups: [""]
-  resources:
-  - limitranges
-  - replicationcontrollers
-  - resourcequotas
-  verbs: ["list", "watch"]
-
-- apiGroups: [""]
-  resources:
-  - configmaps
-  - endpoints
-  - events
-  - persistentvolumeclaims
-  - pods
-  - secrets
-  - serviceaccounts
-  - services
-  verbs: ["*"]
-
-- apiGroups: [""]
-  resources: ["endpoints", "nodes", "nodes/proxy", "namespaces"]
-  verbs: ["get", "list", "watch"]
-
-- apiGroups: ["apps"]
-  resources: ["cronjobs", "daemonsets", "deployments", "jobs", "replicasets", "statefulsets"]
-  verbs: ["*"]
-
-- apiGroups: ["autoscaling"]
-  resources: ["horizontalpodautoscalers"]
-  verbs: ["list", "watch"]
-
-- apiGroups: ["autoscaling.k8s.io"]
-  resources: ["verticalpodautoscalers"]
-  verbs: ["list", "watch"]
-
-- apiGroups: ["batch"]
-  resources: ["cronjobs", "jobs"]
-  verbs: ["*"]
-
-- apiGroups: ["certificates.k8s.io"]
-  resources: ["certificatesigningrequests"]
-  verbs: ["list", "watch"]
-
-- apiGroups: ["extensions"]
-  resources: ["daemonsets", "replicasets"]
-  verbs: ["get", "list", "watch"]
-
-- apiGroups: ["extensions"]
-  resources: ["deployments"]
-  verbs: ["create", "delete", "update"]
-
-- apiGroups: ["extensions"]
-  resources: ["ingresses"]
-  verbs: ["*"]
-
-- apiGroups: ["io.jaegertracing"]
-  resources: ["*"]
-  verbs: ["*"]
-
-- apiGroups: ["jaegertracing.io"]
-  resources: ["*"]
-  verbs: ["*"]
-
-- apiGroups: ["logging.openshift.io"]
-  resources: ["elasticsearches"]
-  verbs: ["*"]
-
-- apiGroups: ["monitoring.coreos.com"]
-  resources: ["servicemonitors"]
-  verbs: ["create", "delete", "get"]
-
-- apiGroups: ["route.openshift.io"]
-  resources: ["routes"]
-  verbs: ["*"]
-
-- apiGroups: ["policy"]
-  resources: ["poddisruptionbudgets"]
-  verbs: ["list", "watch"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-observability
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-observability
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-kind: ClusterRole # ClusterRole needed for nonResourceURLs
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-observability-non-resource
-  namespace: datacore
-rules:
-- nonResourceURLs: ["/metrics"]
-  verbs: ["get"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-observability-non-resource
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cds-operator-observability-non-resource
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-kind: Role ## specific to kube-system namespace
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-observability-kube-system
-  namespace: kube-system
-rules:
-- apiGroups: [""]
-  resources: ["serviceaccounts", "services"]
-  verbs: ["create", "delete", "update"]
-
-- apiGroups: ["extensions"]
-  resources: ["deployments"]
-  verbs: ["create", "delete", "update"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-observability-kube-system
-  namespace: kube-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-observability-kube-system
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-######## snapshot ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-snapshot
-  namespace: datacore
-rules:
-- apiGroups: ["snapshot.storage.k8s.io"]
-  resources: ["volumesnapshotcontents", "volumesnapshotclasses", "volumesnapshots"]
-  verbs: ["create", "delete", "get", "list", "update", "watch"]
-
-- apiGroups: ["coordination.k8s.io"]
-  resources: ["leases"]
-  verbs: ["create", "delete", "get", "list", "update", "watch" ]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-snapshot
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator-snapshot
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-######## cds operator ########
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator
-  namespace: datacore
-rules:
-
-- apiGroups: [""]
-  resources: 
-  - configmaps
-  - endpoints
-  - events
-  - namespaces
-  - nodes
-  - nodes/proxy
-  - persistentvolumes
-  - persistentvolumeclaims
-  - pods
-  - pods/log
-  - secrets
-  - serviceaccounts
-  - serviceaccounts/token
-  - services
-  verbs: ["*"]
-
-- apiGroups: ["apiextensions.k8s.io"]
-  resources: ["deployments", "ingress"]
-  verbs: ["create", "delete", "get", "list", "update", "watch"]
-
-- apiGroups: ["apps"]
-  resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
-  verbs: ["*"]
-
-- apiGroups: ["extensions"]
-  resources: ["deployments", "thirdpartyresources"]
-  verbs: ["create", "delete", "get", "list", "update", "watch"]
-
-- apiGroups: ["rook.io"]
-  resources: ["*"]
-  verbs: ["*"]
-
-- apiGroups: ["storage.k8s.io"]
-  resources: ["volumeattachments"]
-  verbs: ["get", "list", "update", "watch"]
-
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
-  verbs: ["get", "list", "watch"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator
-  namespace: datacore
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cds-operator
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-######## cds operator cluster ########
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-cluster
-rules:
-- apiGroups: [""]
-  resources: ["persistentvolumes"]
-  verbs: ["list", "create", "delete"]
-
-- apiGroups: [""]
-  resources: ["namespaces"]
-  verbs: ["create", "delete"]
-
-- apiGroups: [""]
-  resources: ["nodes"]
-  verbs: ["list"]
-
-- apiGroups: ["apiextensions.k8s.io"]
-  resources: ["customresourcedefinitions"]
-  verbs: ["*"]
-
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings", "serviceaccounts"]
-  verbs: ["*"]
-
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
-  verbs: ["create"]
-
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: cds-operator-cluster
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cds-operator-cluster
-subjects:
-- kind: ServiceAccount
-  name: cds-operator
-  namespace: datacore
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: cds-operator
-  namespace: datacore
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cds-operator
-  template:
-    metadata:
-      labels:
-        app: cds-operator
-    spec:
-      serviceAccountName: cds-operator
-      containers:
-      - name: cds-operator
-        image: datacoresoftware/cds-operator-0.1:0.10.0.3925
-        imagePullPolicy: Always
-        command: ["/cdsoperator"]
-        args: 
-        - --buildType=release 
-        - --buildTag=0.10.0.3925
-        - --repoLocation=datacoresoftware
-      imagePullSecrets:
-      - name: cds-docker-credentials
-
 
 ---
