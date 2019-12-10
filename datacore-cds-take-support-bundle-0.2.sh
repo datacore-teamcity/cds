@@ -1,6 +1,8 @@
 #!/bin/sh
 # Creates a gzipped json file containing the logstash-* index from ElasticSearch
-# Run this on the master node of a Kubernetes cluster
+# This script may be run on any host connected to the cluster, on 
+# which kubectl is installed.
+# Kubectl should be configured with the cluster of interest as the default context.
 
 cleanup() {
   kubectl delete jobs -n datacore support-bundle-elasticdump-job
