@@ -24,7 +24,7 @@
         "count": 3,
         "vmSize": "Standard_B4ms",
         "storageProfile" : "ManagedDisks",
-        "diskSizesGB": [64],
+        "diskSizesGB": [256],
         "availabilityProfile": "VirtualMachineScaleSets",
         "preProvisionExtension": {
             "name": "mount-filestore",
