@@ -569,11 +569,11 @@ spec:
       serviceAccountName: datacore-operator
       containers:
         - name: datacore-operator
-          image: datacoresoftware/cds-operator-0.1:datacore-operator-0.10.0.4581
+          image: datacoresoftware/cds-operator-0.1:datacore-operator-0.10.0.4730
           command:
           - datacore-operator
           args:
-            - --buildTag=0.10.0.4581
+            - --buildTag=0.10.0.4730
             - --repoLocation=datacoresoftware
           imagePullPolicy: Always
           env:
